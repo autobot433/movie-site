@@ -43,12 +43,13 @@ postgresql://user:password@ep-something.neon.tech/dbname?sslmode=require
 ```
 Change `postgresql://` to `postgresql+asyncpg://` at the start — that's the `DATABASE_URL` value you'll use.
 
-**2. Deploy the backend on [Render](https://render.com):**
-- New → Web Service → connect this GitHub repo
-- Render will detect `render.yaml` in the repo root and pre-fill the settings (root directory `backend`, build/start commands, Python version)
-- Choose the **Starter** plan (not Free) — the free tier sleeps after inactivity, which means a ~30-second delay the first time anyone visits after it's been idle. Starter (~$7/mo) stays always-on.
+**2. Deploy the backend on [Render](https://render.com), on the free plan:**
+- New → Blueprint → connect this GitHub repo
+- Render reads `render.yaml` and pre-fills everything (free plan, root directory `backend`, build/start commands, Python version) — nothing to configure by hand
 - When prompted for environment variables, set:
   - `TMDB_API_KEY` — your TMDB key
   - `DATABASE_URL` — the Neon connection string from step 1 (with `+asyncpg`)
   - `JWT_SECRET` — Render auto-generates this one, no action needed
 - Deploy. Render gives you a URL like `https://filmrec.onrender.com` — that's the live site.
+
+**The tradeoff of $0:** Render's free tier spins the server down after 15 minutes with no traffic. The next visit after that wakes it back up, which takes 30–50 seconds before the page loads — after that it's instant again until it goes idle once more. There's no free way around this; it's the one real cost of not paying anything.

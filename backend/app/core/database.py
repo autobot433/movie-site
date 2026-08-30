@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import AsyncGenerator
-from urllib.parse import parse_qs, urlencode, urlsplit, urlunsplit
+from urllib.parse import parse_qs, urlencode
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
@@ -27,13 +27,19 @@ def _make_engine():
         # is dropped; `sslmode`'s value maps directly onto asyncpg's own
         # `ssl` kwarg, which accepts the same mode strings under a different
         # name — so translate it there instead of just discarding it.
-        parts = urlsplit(url)
-        query = parse_qs(parts.query)
+        #
+        # This only ever touches the query string via plain str.partition,
+        # deliberately never urllib.parse.urlsplit: recent CPython versions
+        # (the one this runs on in production included) have a real bug
+        # where urlsplit raises ValueError on ordinary user:pass@host
+        # netlocs, misfiring a check meant only for bracketed IPv6 hosts.
+        base, _, query_string = url.partition("?")
+        query = parse_qs(query_string)
         query.pop("channel_binding", None)
         sslmode = query.pop("sslmode", [None])[0]
         if sslmode:
             connect_args["ssl"] = sslmode
-        url = urlunsplit((parts.scheme, parts.netloc, parts.path, urlencode(query, doseq=True), parts.fragment))
+        url = f"{base}?{urlencode(query, doseq=True)}" if query else base
 
     return create_async_engine(url, echo=False, connect_args=connect_args)
 

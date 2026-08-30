@@ -1,6 +1,6 @@
 # FilmRec
 
-FilmRec is a full-stack movie and TV recommendation app. Users can create an account, search for movies and shows, rate what they have watched, build a watchlist, and get personalized recommendations using TMDB data.
+FilmRec is a full-stack movie and TV recommendation app. Users can create an account, search for movies and shows, rate what they have watched, build a watchlist, and get personalized recommendations using TMDB data. One specific feature I liked was the feed section of the website. The thought behind the feed section is because nowadays everyone likes to scroll to consume media, now you can scroll to quickly see movie recommendations. 
 
 Live site: https://movie-site-mu-ruby.vercel.app
 
@@ -12,6 +12,8 @@ Live site: https://movie-site-mu-ruby.vercel.app
 - Save movies and shows to a watchlist
 - Get personalized recommendations
 - View posters, genres, release dates, and descriptions
+- Redirect to youtube to watch trailers
+- Short form style "feed" to get movie recommendations 
 
 ## Tech Stack
 

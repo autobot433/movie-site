@@ -93,12 +93,18 @@ async def custom_404_handler(request: Request, exc: StarletteHTTPException):
     return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
 
 
-app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
-app.include_router(recommendations.router, prefix="/api/recommendations", tags=["recommendations"])
-app.include_router(ratings.router, prefix="/api/ratings", tags=["ratings"])
-app.include_router(watchlist.router, prefix="/api/watchlist", tags=["watchlist"])
-app.include_router(profile.router, prefix="/api/profile", tags=["profile"])
-app.include_router(search.router, prefix="/api/search", tags=["search"])
+# Registered under both prefixes: locally this process serves "/api/..."
+# directly, with nothing else in front of it. On Vercel, api/index.py is
+# itself conceptually mounted at "/api" — different sources describe
+# inconsistently whether that prefix reaches this app or gets stripped
+# first, so both are covered rather than guessing which one is real.
+for prefix in ("/api", ""):
+    app.include_router(auth.router, prefix=f"{prefix}/auth", tags=["auth"])
+    app.include_router(recommendations.router, prefix=f"{prefix}/recommendations", tags=["recommendations"])
+    app.include_router(ratings.router, prefix=f"{prefix}/ratings", tags=["ratings"])
+    app.include_router(watchlist.router, prefix=f"{prefix}/watchlist", tags=["watchlist"])
+    app.include_router(profile.router, prefix=f"{prefix}/profile", tags=["profile"])
+    app.include_router(search.router, prefix=f"{prefix}/search", tags=["search"])
 
 
 FRONTEND = Path(__file__).resolve().parents[2] / "public"

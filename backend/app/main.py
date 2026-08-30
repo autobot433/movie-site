@@ -32,8 +32,6 @@ app = FastAPI(
     title="FilmRec API",
     version="1.0.0",
     lifespan=lifespan,
-    # Explicit, not just the (already-safe) default: guarantees Starlette
-    # never renders a debug traceback page to a client under any config.
     debug=False,
 )
 
@@ -42,10 +40,6 @@ app.state.limiter = limiter
 
 @app.exception_handler(RateLimitExceeded)
 async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
-    # Match the shape ({"detail": ...}) every other error on this API uses,
-    # instead of slowapi's default {"error": ...} — the frontend's error
-    # handling only ever looks at `detail`, so this keeps rate-limit
-    # messages from silently falling back to a generic "Request failed".
     response = JSONResponse(
         status_code=429,
         content={"detail": "Too many requests. Please wait a moment and try again."},

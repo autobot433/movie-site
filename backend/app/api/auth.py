@@ -36,8 +36,6 @@ async def get_current_user(
 @limiter.limit("5/minute")
 async def register(request: Request, payload: RegisterIn, db: AsyncSession = Depends(get_db)):
     if payload.website:
-        # Honeypot tripped — report success without creating anything, so a
-        # bot filling every field can't tell its submission was rejected.
         return {"detail": "Account created."}
 
     existing = await db.execute(

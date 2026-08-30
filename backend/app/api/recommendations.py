@@ -52,8 +52,7 @@ async def for_you(
     watchlist_result = await db.execute(select(WatchlistItem.tmdb_id).where(WatchlistItem.user_id == user.id))
     exclude_ids.update(watchlist_result.scalars().all())
 
-    # "Refresh" reshuffles which genre rows show up, seeded so a given click
-    # is reproducible rather than fully random.
+
     genre_pool = list(tmdb.FEATURED_GENRE_IDS)
     random.Random(refresh_seed).shuffle(genre_pool)
 

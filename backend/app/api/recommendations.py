@@ -16,8 +16,7 @@ from app.services import tmdb
 
 router = APIRouter()
 
-# How many genre rows "For You" surfaces per load — plenty for one screen
-# without waiting on 8 parallel TMDB round-trips for every genre we track.
+
 FOR_YOU_ROW_COUNT = 4
 
 

@@ -86,6 +86,4 @@ async def me(user: User = Depends(get_current_user)):
 @router.post("/forgot-password")
 @limiter.limit("5/minute")
 async def forgot_password(request: Request, payload: ForgotPasswordIn):
-    # Always reports success — confirming or denying that an email is
-    # registered is its own leak, and no mail sender is wired up here yet.
     return {"detail": "If that email exists, a reset link has been sent."}

@@ -3,8 +3,9 @@
 A personal movie and TV recommendation app: rate what you've watched, build a watchlist, and get picks tailored to your taste. Data comes from [TMDB](https://www.themoviedb.org).
 
 ```
-frontend/index.html   Single-page app (React via CDN, no build step)
-backend/app/          FastAPI backend — serves the API and the frontend itself
+public/index.html   Single-page app (React via CDN, no build step)
+backend/app/         FastAPI backend — serves the API and the frontend itself
+api/index.py         Entrypoint used only when deploying to Vercel
 ```
 
 ## Running it locally
@@ -37,19 +38,21 @@ Ratings, watchlist, and account data persist in a local SQLite file (`backend/fi
 
 The local setup uses SQLite, which doesn't survive on most hosting platforms (the disk resets on restart). For a real deployment, point `DATABASE_URL` at a Postgres database instead — the code supports both without any changes.
 
-**1. Create a free Postgres database** at [neon.com](https://neon.com) (sign up, create a project, copy the connection string). It'll look like:
+**1. Create a free Postgres database** at [neon.com](https://neon.com) (sign up, create a project). On the connection string screen, use the **pooled** connection option (toggle it on, or pick the host with `-pooler` in the name) — this matters for a serverless deploy, where many function instances can each open a connection at once; the pooled endpoint handles that, a direct one would run out of connections. It looks like:
 ```
-postgresql://user:password@ep-something.neon.tech/dbname?sslmode=require
+postgresql://user:password@ep-something-pooler.neon.tech/dbname?sslmode=require
 ```
-Change `postgresql://` to `postgresql+asyncpg://` at the start — that's the `DATABASE_URL` value you'll use.
+Change `postgresql://` to `postgresql+asyncpg://` at the start — that's the `DATABASE_URL` value you'll use below.
 
-**2. Deploy the backend on [Render](https://render.com), on the free plan:**
-- New → Blueprint → connect this GitHub repo
-- Render reads `render.yaml` and pre-fills everything (free plan, root directory `backend`, build/start commands, Python version) — nothing to configure by hand
-- When prompted for environment variables, set:
+**2. Deploy on [Vercel](https://vercel.com), free, no sleep:**
+- Sign up, connect your GitHub, **Add New → Project**, pick this repo
+- Vercel should auto-detect it (via `vercel.json` and `api/index.py`) — no build settings to change
+- Add three environment variables when prompted:
   - `TMDB_API_KEY` — your TMDB key
-  - `DATABASE_URL` — the Neon connection string from step 1 (with `+asyncpg`)
-  - `JWT_SECRET` — Render auto-generates this one, no action needed
-- Deploy. Render gives you a URL like `https://filmrec.onrender.com` — that's the live site.
+  - `DATABASE_URL` — the pooled Neon string from step 1 (with `+asyncpg`)
+  - `JWT_SECRET` — any random string you make up
+- Deploy. You'll get a URL like `https://filmrec.vercel.app` — that's the live site, and it never sleeps (each visit runs a fresh lightweight function instead of waking up a napping server).
 
-**The tradeoff of $0:** Render's free tier spins the server down after 15 minutes with no traffic. The next visit after that wakes it back up, which takes 30–50 seconds before the page loads — after that it's instant again until it goes idle once more. There's no free way around this; it's the one real cost of not paying anything.
+This repo also has a `render.yaml` for [Render](https://render.com) as an alternative if Vercel ever gives you trouble — same Neon database works there too, just use the direct (non-pooled) connection string instead since Render runs one long-lived process rather than serverless functions. Render's free plan does sleep after 15 minutes idle, unlike Vercel.
+
+**Heads up on this first deploy:** this Vercel setup is prepared based on their current documented conventions, but wasn't tested against a live Vercel deployment (no account access from where this was built). If the build log shows an error, paste it back and it'll get fixed fast — first-deploy hiccups here are normal and quick to resolve, not a sign anything is fundamentally wrong.

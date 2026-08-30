@@ -19,7 +19,7 @@ SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
 
 async def init_db() -> None:
-    from app import models  # noqa: F401 — import registers tables on Base.metadata
+    from app import models  
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

@@ -12,7 +12,7 @@ class RegisterIn(BaseModel):
     username: str = Field(min_length=3, max_length=50)
     password: str = Field(min_length=8)
     display_name: str = ""
-    website: str = ""  # honeypot — real submissions leave this empty
+    website: str = ""
 
 
 class TokenPair(BaseModel):

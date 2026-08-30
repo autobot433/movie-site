@@ -88,7 +88,7 @@ async def custom_404_handler(request: Request, exc: StarletteHTTPException):
     can handle it far better than a blank browser error page ever could.
     API paths keep returning plain JSON, since nothing there renders HTML.
     """
-    if exc.status_code == 404 and not request.url.path.startswith(("/api/", "/static/")) and FRONTEND.is_dir():
+    if exc.status_code == 404 and not request.url.path.startswith("/api/") and FRONTEND.is_dir():
         return FileResponse(FRONTEND / "index.html", status_code=200)
     return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
 
@@ -109,16 +109,23 @@ for prefix in ("/api", ""):
 
 FRONTEND = Path(__file__).resolve().parents[2] / "public"
 
+
+@app.get("/health")
+def health():
+    return {"status": "ok", "version": "1.0.0"}
+
+
 # On Vercel, public/ is served directly by their CDN and never bundled into
 # this function (nor does it need to be) — only mount it locally, where this
-# process is responsible for serving the frontend itself.
+# process is responsible for serving the frontend itself. Registered dead
+# last: a Mount("/", ...) matches every path, so anything defined above it
+# (the API routers, /health) has to come first or this would swallow them.
 if FRONTEND.is_dir():
     @app.get("/")
     async def serve_frontend():
         return FileResponse(FRONTEND / "index.html")
 
-    app.mount("/static", StaticFiles(directory=str(FRONTEND)), name="static")
-
-@app.get("/health")
-def health():
-    return {"status": "ok", "version": "1.0.0"}
+    # Mounted at "/" rather than "/static" so an asset like about-me.jpg is
+    # reachable at the exact same URL locally as it is on Vercel, where
+    # public/ is served natively at the site root with no "/static" prefix.
+    app.mount("/", StaticFiles(directory=str(FRONTEND)), name="static")

@@ -195,9 +195,9 @@ async def discover_filtered(
     return [_format_movie(r, media_type) for r in results if r.get("poster_path")]
 
 
-async def get_trending(media_type: str = "all", time_window: str = "week") -> list[dict]:
+async def get_trending(media_type: str = "all", time_window: str = "week", page: int = 1) -> list[dict]:
     async with _client() as client:
-        resp = await client.get(f"/trending/{media_type}/{time_window}")
+        resp = await client.get(f"/trending/{media_type}/{time_window}", params={"page": page})
         resp.raise_for_status()
         results = resp.json().get("results", [])
     return [
@@ -229,7 +229,7 @@ async def get_recommendations_for_ids(
     higher than one similar to only one).
     """
     if not rated_items:
-        return await discover_by_genre(genre_id or 28, count=count)
+        return (await discover_by_genre(genre_id or 28))[:count]
 
     high_rated = sorted(
         [r for r in rated_items if r.get("rating", 0) >= 7],

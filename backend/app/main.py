@@ -101,7 +101,7 @@ app.include_router(profile.router, prefix="/api/profile", tags=["profile"])
 app.include_router(search.router, prefix="/api/search", tags=["search"])
 
 
-FRONTEND = Path(__file__).resolve().parents[2] / "frontend"
+FRONTEND = Path(__file__).resolve().parents[2] / "public"
 
 @app.get("/")
 async def serve_frontend():
